@@ -1,0 +1,12 @@
+#!/bin/bash
+VERSION=1.3.10
+FULLNAME=javino_stable_$VERSION-chonOS
+
+echo "Manifest-Version: $VERSION" > /tmp/manifest.txt
+echo "Class-Path: ." >> /tmp/manifest.txt
+echo "Main-Class: br.pro.turing.javino.Javino" >> /tmp/manifest.txt
+
+rm -rf $FULLNAME.jar
+javac br/pro/turing/javino/Javino.java
+jar cvmf /tmp/manifest.txt $FULLNAME.jar br*
+java -jar $FULLNAME.jar
