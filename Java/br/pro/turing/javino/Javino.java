@@ -136,7 +136,7 @@ public class Javino {
 					while ((line = saida.readLine()) != null) {
 						out = out + line;
 					}
-					System.out.println("[JAVINO] Fatal error! [" + out + "]");
+					System.out.println("[JAVINO] Fatal error (send)! [" + out + "]");
 					result = false;
 					lockPort(false, PORT);
 				}
@@ -180,7 +180,7 @@ public class Javino {
 					while ((line = read_to_array.readLine()) != null) {
 						out = out + line;
 					}
-					System.out.println("[JAVINO] Fatal error! [" + out + "]");
+					System.out.println("[JAVINO] Fatal error (listen)! [" + out + "]");
 					result = false;
 					lockPort(false, PORT);
 				}
@@ -200,8 +200,9 @@ public class Javino {
 		boolean result;
 		if (portLocked(PORT)) {
 			result = false;
-		} else {
+		}else {
 			lockPort(true, PORT);
+			String PORTshortNAME=PORT.substring(PORT.lastIndexOf("/")+1);
 			String operation = "request";
 			String[] command = new String[5];
 			command[0] = this.pythonPlataform;
@@ -218,6 +219,9 @@ public class Javino {
 						new InputStreamReader(p.getInputStream()));
 				if (p.exitValue() == 0) {
 					result = setArryMsg(read_to_array);
+					if(result){
+						addfinalmsg("port("+PORTshortNAME+",on);");
+					}
 					lockPort(false, PORT);
 				} else {
 					String line = null;
@@ -225,13 +229,14 @@ public class Javino {
 					while ((line = read_to_array.readLine()) != null) {
 						out = out + line;
 					}
-					System.out.println("[JAVINO] Fatal error! [" + out + "]");
-					result = false;
+					System.out.println("[JAVINO] Fatal error (request)! [" + out + "]");
+					setfinalmsg("port("+PORTshortNAME+",off);");
+					result = true;
 					lockPort(false, PORT);
 				}
 
 			} catch (IOException | InterruptedException e) {
-				System.out.println("[JAVINO] Error on listen");
+				System.out.println("[JAVINO] Error on request");
 				e.printStackTrace();
 				result = false;
 				lockPort(false, PORT);
@@ -274,6 +279,10 @@ public class Javino {
 
 	private void setfinalmsg(String s_msg) {
 		this.finalymsg = s_msg;
+	}
+
+	private void addfinalmsg(String a_msg) {
+		this.finalymsg = this.finalymsg+a_msg;
 	}
 
 	private boolean preamble(char[] pre_arraymsg) {
