@@ -12,6 +12,8 @@ public class Javino {
 	private static final String staticversion = "stable 1.3.10";
 	private String pythonPlataform;
 	private String finalymsg = null;
+	private String PORTshortNAME = null;
+	private boolean booleanInvalidMsg = false;
 
 	public Javino() {
 		load();
@@ -202,7 +204,7 @@ public class Javino {
 			result = false;
 		}else {
 			lockPort(true, PORT);
-			String PORTshortNAME=PORT.substring(PORT.lastIndexOf("/")+1);
+			setPORTshortNAME(PORT);
 			String operation = "request";
 			String[] command = new String[5];
 			command[0] = this.pythonPlataform;
@@ -220,7 +222,11 @@ public class Javino {
 				if (p.exitValue() == 0) {
 					result = setArryMsg(read_to_array);
 					if(result){
-						addfinalmsg("port("+PORTshortNAME+",on);");
+						if(getBooleanInvalidMsg()){
+							setfinalmsg("port("+getPORTshortNAME()+",invalid);");
+						}else{
+							addfinalmsg("port("+getPORTshortNAME()+",on);");
+						}
 					}
 					lockPort(false, PORT);
 				} else {
@@ -230,7 +236,7 @@ public class Javino {
 						out = out + line;
 					}
 					System.out.println("[JAVINO] Fatal error (request)! [" + out + "]");
-					setfinalmsg("port("+PORTshortNAME+",off);");
+					setfinalmsg("port("+getPORTshortNAME()+",off);");
 					result = true;
 					lockPort(false, PORT);
 				}
@@ -263,7 +269,12 @@ public class Javino {
 			System.out.println("[JAVINO] Error at message processing");
 			return false;
 		}
-		return preamble(out.toCharArray());
+		if(preamble(out.toCharArray())){
+			return true;
+		}else{
+			setBooleanInvalidMsg(true);
+			return true;
+		}
 	}
 
 	private String char2string(char in[], int sizein) {
@@ -437,6 +448,25 @@ public class Javino {
 			System.exit(1);
 		}
 	}
+
+	private void setPORTshortNAME(String PORT){
+		this.PORTshortNAME=PORT.substring(PORT.lastIndexOf("/")+1);
+	}
+
+	private String getPORTshortNAME(){
+		return this.PORTshortNAME;
+	}
+
+	private void setBooleanInvalidMsg(boolean status){
+		this.booleanInvalidMsg = status;
+	}
+
+	private boolean getBooleanInvalidMsg(){
+		boolean out=this.booleanInvalidMsg;
+		this.booleanInvalidMsg = false;
+		return out;
+	}
+	
 
 	public static void main(String args[]) {
 		try {
