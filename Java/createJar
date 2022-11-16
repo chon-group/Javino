@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION=1.4
+VERSION=1.4.1
 FULLNAME=javino_stable_$VERSION-chonOS
 
 echo "Manifest-Version: $VERSION" > /tmp/manifest.txt

@@ -9,11 +9,11 @@ import java.io.PrintWriter;
 
 public class Javino {
 	private final String version = staticversion;
-	private static final String staticversion = "stable 1.3.10";
+	private static final String staticversion = "stable 1.4.1";
 	private String pythonPlataform;
 	private String finalymsg = null;
 	private String PORTshortNAME = null;
-	private boolean booleanInvalidMsg = false;
+	private boolean booleanTimeOut = false;
 
 	public Javino() {
 		load();
@@ -222,8 +222,8 @@ public class Javino {
 				if (p.exitValue() == 0) {
 					result = setArryMsg(read_to_array);
 					if(result){
-						if(getBooleanInvalidMsg()){
-							setfinalmsg("port("+getPORTshortNAME()+",invalid);");
+						if(getBooleanTimeOut()){
+							setfinalmsg("port("+getPORTshortNAME()+",timeout);");
 						}else{
 							addfinalmsg("port("+getPORTshortNAME()+",on);");
 						}
@@ -269,12 +269,8 @@ public class Javino {
 			System.out.println("[JAVINO] Error at message processing");
 			return false;
 		}
-		if(preamble(out.toCharArray())){
-			return true;
-		}else{
-			setBooleanInvalidMsg(true);
-			return true;
-		}
+		
+		return preamble(out.toCharArray());
 	}
 
 	private String char2string(char in[], int sizein) {
@@ -299,8 +295,9 @@ public class Javino {
 	private boolean preamble(char[] pre_arraymsg) {
 		try {
 			if (pre_arraymsg.length == 0) {
-				System.out.println("[JAVINO] Invalid message!");
-				return false;
+				System.out.println("[JAVINO] Timeout!");
+				setBooleanTimeOut(true);
+				return true;
 			}
 			char p1 = pre_arraymsg[0];
 			char p2 = pre_arraymsg[1];
@@ -457,13 +454,13 @@ public class Javino {
 		return this.PORTshortNAME;
 	}
 
-	private void setBooleanInvalidMsg(boolean status){
-		this.booleanInvalidMsg = status;
+	private void setBooleanTimeOut(boolean status){
+		this.booleanTimeOut = status;
 	}
 
-	private boolean getBooleanInvalidMsg(){
-		boolean out=this.booleanInvalidMsg;
-		this.booleanInvalidMsg = false;
+	private boolean getBooleanTimeOut(){
+		boolean out=this.booleanTimeOut;
+		this.booleanTimeOut = false;
 		return out;
 	}
 	
@@ -513,15 +510,13 @@ public class Javino {
 
 				if (type.equals("command")) {
 					if (j.sendCommand(port, msg) == false) {
-						System.out.println(portAlias+"(off);");
-						//System.exit(1);
+						System.exit(1);
 					}
 				} else if (type.equals("request")) {
 					if (j.requestData(port, msg) == true) {
 						System.out.println(j.getData());
 					} else {
-						System.out.println(portAlias+"(off);");
-						//System.exit(1);
+						System.exit(1);
 					}
 				} else if (type.equals("listen")) {
 					if (j.listenArduino(port) == true) {
