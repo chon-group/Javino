@@ -18,16 +18,16 @@ public class Javino {
 		this.serialPort.closePort();
 	}
 	private void load() {
-		System.out.println("[JAVINO] Using version " + this.version + " ChonOS");
+		System.out.println("[JAVINO] Using version " + this.version + "| chonOS");
 	}
 
 	private void load(String portDescriptor){
 		if(!getPortAddress().equals(portDescriptor)){
 			if(!getPortAddress().equals("none")){
-				System.out.println("[JAVINO] Disconecting with "+getPortAddress());
+				System.out.println("[JAVINO] I'm disconnecting from "+getPortAddress());
 				this.serialPort.closePort();
 			}
-			System.out.println("[JAVINO] Connecting with "+portDescriptor);
+			System.out.println("[JAVINO] I'm connecting to "+portDescriptor);
 			this.serialPort = SerialPort.getCommPort(portDescriptor);
 			this.serialPort.setParity(SerialPort.NO_PARITY);
 			this.serialPort.setNumDataBits(8);
@@ -43,7 +43,7 @@ public class Javino {
 
 				}
 			}else{
-				System.out.println("Error ");
+				System.out.println("[JAVINO] Error: something went wrong. ");
 			}
 		}
 	}
@@ -143,16 +143,16 @@ public class Javino {
 						.println("java -jar javino.jar [TYPE] [PORT] [MSG]");
 				System.out
 						.println("\n[TYPE] "
-								+ "\n listen  -- wait an answer from Arduino"
-								+ "\n request -- send a request to Arduino, wait answer "
-								+ "\n command -- send a command to Arduino, without wait answer");
+								+ "\n listen  -- waits for an answer from Arduino."
+								+ "\n request -- sends a request command to Arduino. It is expected an answer."
+								+ "\n command -- sends an execution command to Arduino. It has no answer.");
 
 				System.out.println("\n[PORT]"
 						+ "\n Set communication serial port"
 						+ "\n example: \t COM3 - For Windows"
 						+ "\n \t\t /dev/ttyACM0 - For Linux");
 				System.out.println("\n[MSG]" + "\n Message for Arduino-side"
-						+ "\n example: \t \"Hello Arduino!\"");
+						+ "\n example: \t \"Hello Controller!\"");
 			} else {
 				String port = args[1];
 				String portAlias = port.substring(port.lastIndexOf("/")+1);
@@ -179,9 +179,9 @@ public class Javino {
 				}
 			}
 		} catch (Exception ex) {
-			System.out.println("[JAVINO] Using version " + staticversion + " ChonOS");
+			System.out.println("[JAVINO] Using version " + staticversion + "| chonOS");
 			System.out
-					.println("\tTo use Javino, look the User Manual at http://javino.sf.net");
+					.println("\tTo use Javino, read the User Manual at http://javino.sf.net");
 			System.out
 					.println("For more information try: \n\t java -jar javino.jar --help");
 		}
