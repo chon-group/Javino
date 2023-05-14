@@ -2,6 +2,14 @@ package br.pro.turing.javino;
 
 import com.fazecast.jSerialComm.*;
 
+import java.io.IOException;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
+import org.jline.reader.impl.DefaultParser;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+
 public class Javino {
 	private final String version = staticversion;
 	private static final String staticversion = "stable 1.6.0";
@@ -18,7 +26,7 @@ public class Javino {
 		this.serialPort.closePort();
 	}
 	private void load() {
-		System.out.println("[JAVINO] Using version " + this.version + "| chonOS");
+		System.out.println("[JAVINO] Using version " + this.version + " chonOS");
 	}
 
 	private void load(String portDescriptor){
@@ -55,7 +63,6 @@ public class Javino {
 	public String getPortAddress() {
 		return portAddress;
 	}
-
 
 	public boolean sendCommand(String PORT, String MSG) {
 		try{
@@ -111,8 +118,6 @@ public class Javino {
 		}
 	}
 
-
-
 	public String getData() {
 		String out = this.finalymsg;
 		this.finalymsg = null;
@@ -135,56 +140,76 @@ public class Javino {
 		return this.PORTshortNAME;
 	}
 
-	public static void main(String args[]) {
-		try {
-			String type = args[0];
-			if (type.equals("--help")) {
+	public static void main(String args[]) throws IOException {
+		Javino j = new Javino();
+			try {
+			if (args[0].equals("--help")) {
 				System.out
-						.println("java -jar javino.jar [TYPE] [PORT] [MSG]");
+						.println("\nuser@computer:$ java -jar javino.jar [PORT]");
+				System.out
+						.println("\tjavino@[PORT]$ [TYPE] [MSG] ");
 				System.out
 						.println("\n[TYPE] "
-								+ "\n listen  -- waits for an answer from Arduino."
-								+ "\n request -- sends a request command to Arduino. It is expected an answer."
-								+ "\n command -- sends an execution command to Arduino. It has no answer.");
-
-				System.out.println("\n[PORT]"
-						+ "\n Set communication serial port"
-						+ "\n example: \t COM3 - For Windows"
-						+ "\n \t\t /dev/ttyACM0 - For Linux");
-				System.out.println("\n[MSG]" + "\n Message for Arduino-side"
-						+ "\n example: \t \"Hello Controller!\"");
+								+ "\n listen  -- wait an answer from Arduino"
+								+ "\n request -- send a request to Arduino, wait answer "
+								+ "\n command -- send a command to Arduino, without wait answer");
 			} else {
-				String port = args[1];
-				String portAlias = port.substring(port.lastIndexOf("/")+1);
-				String msg = args[2];
+				j.load(args[0]);
+				String portAlias = args[0].substring(args[0].lastIndexOf("/")+1);
+				try{
+					Terminal terminal = TerminalBuilder.terminal();
+					LineReader lineReader = LineReaderBuilder.builder()
+							.terminal(terminal)
+							.parser(new DefaultParser())
+							.build();
 
-				Javino j = new Javino();
+					String lastCommand = "";
 
-				if (type.equals("command")) {
-					if (j.sendCommand(port, msg) == false) {
-						System.exit(1);
+					while (true) {
+						String input;
+
+						try {
+							input = lineReader.readLine("javino@"+portAlias+"$ ");
+						} catch (UserInterruptException e) {
+							// Tratar a interrupção do usuário (Ctrl-C)
+							j.closePort();
+							System.exit(0);
+							break;
+						}
+
+						// Last Command
+						if (input.isEmpty() && !lastCommand.isEmpty()) {
+							input = lastCommand;
+							terminal.writer().println(input);
+						}
+
+						// Javino Exec
+						input = input.trim();
+						String[] inputs = input.split(" ");
+						if(inputs[0].equals("exit")){
+							j.closePort();
+							System.exit(0);
+						} else if (inputs[0].equals("request")){
+							if(j.requestData(args[0],inputs[1])){
+								terminal.writer().println(j.getData());
+							};
+						}else if(inputs[0].equals("command")){
+							j.sendCommand(args[0],inputs[1]);
+						}else{
+							terminal.writer().println(inputs[0]+": Unknown command");
+						}
+
+						lastCommand = input;
 					}
-				} else if (type.equals("request")) {
-					if (j.requestData(port, msg) == true) {
-						System.out.println(j.getData());
-					} else {
-						System.exit(1);
-					}
-				} else if (type.equals("listen")) {
-					if (j.listenArduino(port) == true) {
-						System.out.println(j.getData());
-					} else {
-						System.exit(1);
-					}
+				}catch (Exception e){
+					e.printStackTrace();
 				}
 			}
 		} catch (Exception ex) {
-			System.out.println("[JAVINO] Using version " + staticversion + "| chonOS");
 			System.out
-					.println("\tTo use Javino, read the User Manual at http://javino.sf.net");
+					.println("\tTo use Javino, read the User Manual at http://javino.chon.group");
 			System.out
-					.println("For more information try: \n\t java -jar javino.jar --help");
+					.println("For more information try: \n\tjava -jar javino.jar --help");
 		}
 	}
-
 }
