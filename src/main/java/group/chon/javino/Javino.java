@@ -1,4 +1,4 @@
-package br.pro.turing.javino;
+package group.chon.javino;
 
 import com.fazecast.jSerialComm.*;
 
