@@ -29,7 +29,7 @@ allprojects {
 }
 
 dependencies {
-  implementation 'com.github.chon-group:javino:1.6'
+  implementation 'com.github.chon-group:javino:1.6.1'
 }
 
 ```
