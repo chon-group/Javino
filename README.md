@@ -14,7 +14,7 @@ Add it in your pom.xml at the end of repositories and add the dependency.
   <dependency>
     <groupId>com.github.chon-group</groupId>
     <artifactId>javino</artifactId>
-    <version>1.6</version>
+    <version>1.6.1</version>
   </dependency>
 </dependencies>
 ```
