@@ -12,7 +12,7 @@ import org.jline.terminal.TerminalBuilder;
 
 public class Javino {
 	private final String version = staticversion;
-	private static final String staticversion = "stable 1.6.0 (jSerialComm)";
+	private static final String staticversion = "stable 1.6.2 (jSerialComm)";
 	private String finalymsg = null;
 	private String PORTshortNAME = null;
 	private SerialPort serialPort = null;
@@ -112,7 +112,7 @@ public class Javino {
 					long timeMillisCurrent = System.currentTimeMillis();
 					if(timeMillisInitial+1000 < timeMillisCurrent){
 						setfinalmsg("port("+getPORTshortNAME()+",timeout);");
-						setPortAddress("unknown");
+						//setPortAddress("unknown");
 						return false;
 					}
 				}
@@ -226,7 +226,13 @@ public class Javino {
 							if(j.requestData(j.getPortAddress(),inputs[1])){
 								terminal.writer().println(j.getData());
 							};
-						}else if(inputs[0].equals("command")){
+						}else if (inputs[0].equals("listen") || inputs[0].equals("read")){
+							if(j.listenArduino(j.getPortAddress())){
+								terminal.writer().println(j.getData());
+							}else{
+								terminal.writer().println(j.getData());
+							};
+						}else if(inputs[0].equals("command")|| inputs[0].equals("write")){
 							j.sendCommand(j.getPortAddress(),inputs[1]);
 						}else if(inputs[0].equals("disconnect")){
 							j.closePort();

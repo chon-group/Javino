@@ -14,7 +14,7 @@ Add it in your pom.xml at the end of repositories and add the dependency.
   <dependency>
     <groupId>com.github.chon-group</groupId>
     <artifactId>javino</artifactId>
-    <version>1.6.1</version>
+    <version>1.6.2</version>
   </dependency>
 </dependencies>
 ```
@@ -29,7 +29,7 @@ allprojects {
 }
 
 dependencies {
-  implementation 'com.github.chon-group:javino:1.6.1'
+  implementation 'com.github.chon-group:javino:1.6.2'
 }
 
 ```
