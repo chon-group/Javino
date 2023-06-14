@@ -12,7 +12,7 @@ import org.jline.terminal.TerminalBuilder;
 
 public class Javino {
 	private final String version = staticversion;
-	private static final String staticversion = "stable 1.6.0 (jSerialComm)";
+	private static final String staticversion = "stable 1.6.2 (jSerialComm)";
 	private String finalymsg = null;
 	private String PORTshortNAME = null;
 	private SerialPort serialPort = null;
@@ -22,11 +22,12 @@ public class Javino {
 		load();
 	}
 
-	private void closePort(){
+	public void closePort(){
 		try{
 			this.serialPort.closePort();
+			setPortAddress("none");
 		}catch (Exception ex){
-			//System.out.println("[JAVINO] Closing serial port - Error.");
+			System.out.println("[JAVINO] Closing serial port - Error.");
 		}
 	}
 	private boolean load() {
@@ -40,7 +41,6 @@ public class Javino {
 				if(!getPortAddress().equals("none")){
 					closePort();
 				}
-				//System.out.println("[JAVINO] I'm connecting to "+portDescriptor);
 				this.serialPort = SerialPort.getCommPort(portDescriptor);
 				this.serialPort.setParity(SerialPort.NO_PARITY);
 				this.serialPort.setNumDataBits(8);
@@ -64,8 +64,9 @@ public class Javino {
 		}
 	}
 
-	public void setPortAddress(String portAddress) {
+	private void setPortAddress(String portAddress) {
 		this.portAddress = portAddress;
+		setPORTshortNAME(portAddress);
 	}
 
 	public String getPortAddress() {
@@ -111,7 +112,7 @@ public class Javino {
 					long timeMillisCurrent = System.currentTimeMillis();
 					if(timeMillisInitial+1000 < timeMillisCurrent){
 						setfinalmsg("port("+getPORTshortNAME()+",timeout);");
-						setPortAddress("unknown");
+						//setPortAddress("unknown");
 						return false;
 					}
 				}
@@ -187,7 +188,7 @@ public class Javino {
 				if(!j.load(args[0])){
 					System.exit(1);
 				}
-				String portAlias = args[0].substring(args[0].lastIndexOf("/")+1);
+				j.setPortAddress(args[0]);
 				try{
 					Terminal terminal = TerminalBuilder.terminal();
 					LineReader lineReader = LineReaderBuilder.builder()
@@ -201,7 +202,7 @@ public class Javino {
 						String input;
 
 						try {
-							input = lineReader.readLine("javino@"+portAlias+"$ ");
+							input = lineReader.readLine("javino@"+ j.getPORTshortNAME()+"$ ");
 						} catch (UserInterruptException e) {
 							// Tratar a interrupção do usuário (Ctrl-C)
 							j.closePort();
@@ -222,11 +223,21 @@ public class Javino {
 							j.closePort();
 							System.exit(0);
 						} else if (inputs[0].equals("request")){
-							if(j.requestData(args[0],inputs[1])){
+							if(j.requestData(j.getPortAddress(),inputs[1])){
 								terminal.writer().println(j.getData());
 							};
-						}else if(inputs[0].equals("command")){
-							j.sendCommand(args[0],inputs[1]);
+						}else if (inputs[0].equals("listen") || inputs[0].equals("read")){
+							if(j.listenArduino(j.getPortAddress())){
+								terminal.writer().println(j.getData());
+							}else{
+								terminal.writer().println(j.getData());
+							};
+						}else if(inputs[0].equals("command")|| inputs[0].equals("write")){
+							j.sendCommand(j.getPortAddress(),inputs[1]);
+						}else if(inputs[0].equals("disconnect")){
+							j.closePort();
+						}else if(inputs[0].equals("connect")){
+							j.load(inputs[1]);
 						}else{
 							terminal.writer().println(inputs[0]+": Unknown command");
 						}
