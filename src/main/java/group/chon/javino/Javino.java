@@ -1,25 +1,32 @@
 package group.chon.javino;
 
-import com.fazecast.jSerialComm.*;
-
-import java.io.IOException;
+import com.fazecast.jSerialComm.SerialPort;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.DefaultParser;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import java.util.logging.Logger;
 
 public class Javino {
-	private final String version = staticversion;
-	private static final String staticversion = "stable 1.6.2 (jSerialComm)";
+	final String javinoVersion = "1.6.4";
 	private String finalymsg = null;
 	private String PORTshortNAME = null;
 	private SerialPort serialPort = null;
 	private String portAddress  = "none";
+	Logger logger = Logger.getLogger(Javino.class.getName());
 
 	public Javino() {
-		load();
+		logger.info("Using version "+getJavinoVersion());
+	}
+
+	public String getPortAddress() {
+		return portAddress;
+	}
+
+	public String getJavinoVersion(){
+		return javinoVersion;
 	}
 
 	public void closePort(){
@@ -27,50 +34,8 @@ public class Javino {
 			this.serialPort.closePort();
 			setPortAddress("none");
 		}catch (Exception ex){
-			System.out.println("[JAVINO] Closing serial port - Error.");
+			logger.severe("Closing serial port - Error.");
 		}
-	}
-	private boolean load() {
-		System.out.println("[JAVINO] Using version " + this.version);
-		return true;
-	}
-
-	private boolean load(String portDescriptor){
-		if(!getPortAddress().equals(portDescriptor)){
-			try{
-				if(!getPortAddress().equals("none")){
-					closePort();
-				}
-				this.serialPort = SerialPort.getCommPort(portDescriptor);
-				this.serialPort.setParity(SerialPort.NO_PARITY);
-				this.serialPort.setNumDataBits(8);
-				this.serialPort.setNumStopBits(SerialPort.ONE_STOP_BIT);
-				this.serialPort.setFlowControl(SerialPort.FLOW_CONTROL_DISABLED);
-				this.serialPort.setBaudRate(9600);
-				if(this.serialPort.openPort()){
-					setPortAddress(portDescriptor);
-					Thread.sleep(3000);
-					return true;
-				}else{
-					System.out.println("[JAVINO] Error: something went wrong.");
-					return false;
-				}
-			}catch (Exception ex){
-				System.out.println("[JAVINO] Error: I'm connecting to "+portDescriptor+" something went wrong. ");
-				return false;
-			}
-		}else{
-			return true;
-		}
-	}
-
-	private void setPortAddress(String portAddress) {
-		this.portAddress = portAddress;
-		setPORTshortNAME(portAddress);
-	}
-
-	public String getPortAddress() {
-		return portAddress;
 	}
 
 	public boolean sendCommand(String PORT, String MSG) {
@@ -86,11 +51,11 @@ public class Javino {
 				this.serialPort.writeBytes(messageBytes, messageBytes.length);
 				return true;
 			}else{
-				System.out.println(" SEND port open false");
+				logger.severe("port open false");
 				return false;
 			}
 		}catch (Exception ex){
-			ex.printStackTrace();
+			logger.severe(ex.getMessage());
 			return false;
 		}
 	}
@@ -120,18 +85,22 @@ public class Javino {
 				this.serialPort.readBytes(sizeMessage,2);
 				if (((preamble[0] & preamble[1] & preamble[2]) == 102) & (preamble[3] == 101 )){
 					int sizeOfMsg = Integer.parseUnsignedInt(new String(sizeMessage), 16);
-					while(this.serialPort.bytesAvailable()<sizeOfMsg){ }
+					while(true) {
+                        if (this.serialPort.bytesAvailable() >= sizeOfMsg){
+							break;
+						}
+                    }
 					byte[] byteMSG = new byte[sizeOfMsg];
 					this.serialPort.readBytes(byteMSG,sizeOfMsg);
 					setfinalmsg(new String(byteMSG));
 					return true;
 				}
 			}else{
-				System.out.println("LISTEN port open false");
+				logger.severe("LISTEN port open false");
 			}
 			return false;
 		}catch (Exception ex){
-			ex.printStackTrace();
+			logger.severe(ex.getMessage());
 			return false;
 		}
 	}
@@ -142,11 +111,10 @@ public class Javino {
 			if(listenArduino(PORT)) {
 				addfinalmsg("port("+getPORTshortNAME()+",on);");
 			}
-			return true;
 		}else {
 			setfinalmsg("port("+getPORTshortNAME()+",off);");
-			return true;
 		}
+		return true;
 	}
 
 	public String getData() {
@@ -171,16 +139,49 @@ public class Javino {
 		return this.PORTshortNAME;
 	}
 
-	public static void main(String args[]) throws IOException {
+	private boolean load(String portDescriptor){
+		if(!getPortAddress().equals(portDescriptor)){
+			try{
+				if(!getPortAddress().equals("none")){
+					closePort();
+				}
+				this.serialPort = SerialPort.getCommPort(portDescriptor);
+				this.serialPort.setParity(SerialPort.NO_PARITY);
+				this.serialPort.setNumDataBits(8);
+				this.serialPort.setNumStopBits(SerialPort.ONE_STOP_BIT);
+				this.serialPort.setFlowControl(SerialPort.FLOW_CONTROL_DISABLED);
+				this.serialPort.setBaudRate(9600);
+				if(this.serialPort.openPort()){
+					setPortAddress(portDescriptor);
+					Thread.sleep(3000);
+					return true;
+				}else{
+					logger.severe("Error: something went wrong.");
+					return false;
+				}
+			}catch (Exception ex){
+				logger.severe("Error: I'm connecting to "+portDescriptor+" something went wrong. ");
+				return false;
+			}
+		}else{
+			return true;
+		}
+	}
+
+	private void setPortAddress(String portAddress) {
+		this.portAddress = portAddress;
+		setPORTshortNAME(portAddress);
+	}
+
+	// Javino-CLI
+	public static void main(String[] args) {
 		Javino j = new Javino();
 			try {
 			if (args[0].equals("--help")) {
 				System.out
-						.println("\nuser@computer:$ java -jar javino.jar [PORT]");
-				System.out
-						.println("\tjavino@[PORT]$ [TYPE] [MSG] ");
-				System.out
-						.println("\n[TYPE] "
+						.println("\n user@computer:$ java -jar javino.jar [PORT]"
+								+ "\t javino@[PORT]$ [TYPE] [MSG] "
+								+ "\n [TYPE] "
 								+ "\n listen  -- wait an answer from Arduino"
 								+ "\n request -- send a request to Arduino, wait answer "
 								+ "\n command -- send a command to Arduino, without wait answer");
@@ -204,7 +205,6 @@ public class Javino {
 						try {
 							input = lineReader.readLine("javino@"+ j.getPORTshortNAME()+"$ ");
 						} catch (UserInterruptException e) {
-							// Tratar a interrupção do usuário (Ctrl-C)
 							j.closePort();
 							System.exit(0);
 							break;
@@ -219,38 +219,34 @@ public class Javino {
 						// Javino Exec
 						input = input.trim();
 						String[] inputs = input.split(" ");
-						if(inputs[0].equals("exit")){
-							j.closePort();
-							System.exit(0);
-						} else if (inputs[0].equals("request")){
-							if(j.requestData(j.getPortAddress(),inputs[1])){
+						switch (inputs[0]){
+							case "exit" -> {
+								j.closePort();
+								System.exit(0);
+							}
+							case "request" ->{
+								j.requestData(j.getPortAddress(),inputs[1]);
 								terminal.writer().println(j.getData());
-							};
-						}else if (inputs[0].equals("listen") || inputs[0].equals("read")){
-							if(j.listenArduino(j.getPortAddress())){
+							}
+							case "listen","read" -> {
+								j.listenArduino(j.getPortAddress());
 								terminal.writer().println(j.getData());
-							}else{
-								terminal.writer().println(j.getData());
-							};
-						}else if(inputs[0].equals("command")|| inputs[0].equals("write")){
-							j.sendCommand(j.getPortAddress(),inputs[1]);
-						}else if(inputs[0].equals("disconnect")){
-							j.closePort();
-						}else if(inputs[0].equals("connect")){
-							j.load(inputs[1]);
-						}else{
-							terminal.writer().println(inputs[0]+": Unknown command");
+							}
+							case "command","write"	-> j.sendCommand(j.getPortAddress(),inputs[1]);
+							case "disconnect"		-> j.closePort();
+							case "connect" 			-> j.load(inputs[1]);
+							default					-> terminal.writer().println(inputs[0]+": Unknown command");
 						}
 
 						lastCommand = input;
 					}
 				}catch (Exception e){
-					e.printStackTrace();
+					System.out.println(e.getMessage());
 				}
 			}
 		} catch (Exception ex) {
 			System.out
-					.println("\tTo use Javino, read the User Manual at http://javino.chon.group");
+					.println("\tTo use Javino, read the User Manual at https://github.com/chon-group/Javino");
 			System.out
 					.println("For more information try: \n\tjava -jar javino.jar --help");
 		}
