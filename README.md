@@ -41,8 +41,8 @@ and ends.
     <dependencies>
       <dependency>
         <groupId>com.github.chon-group</groupId>
-        <artifactId>javino</artifactId>
-        <version>1.6.3</version>
+        <artifactId>Javino</artifactId>
+        <version>1.6.4</version>
       </dependency>
     </dependencies>
     ```
@@ -62,7 +62,7 @@ and ends.
     }
 
     dependencies {
-      implementation 'com.github.chon-group:javino:1.6.3'
+      implementation 'com.github.chon-group:Javino:1.6.4'
     }
 
     ```
