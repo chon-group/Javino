@@ -15,7 +15,7 @@ The Javino aims to fill this gap because it offers a double-sided communication 
 
 For this reason, every message is composed of a preamble, a field size and the message content. The preamble is a field composed of four hexadecimal characters that are used to identify the beginning of a message sent by an agent. The field size is composed of two hexadecimal characters that are used to calculate the message extension. Finally, the last field is the message content, up to 255 bytes. The preamble and the field size are used together to avoid errors in the event of a loss of information during the message transmission. For the sake of practice, Javino automatically mounts the message.
 
-![Javino Message Format](https://www.researchgate.net/profile/Carlos-Pantoja-3/publication/277403727/figure/fig1/AS:11431281247917744@1716985915035/The-Javino-message-format.png)
+![Javino Message Format](https://www.researchgate.net/profile/Carlos-Pantoja-3/publication/277403727/figure/fig1/The-Javino-message-format.png)
 
 When a message is sent, the Javino library starts to listen on the serial port for arriving char-to-char messages. If there is any information arriving, the Javino stores this character, analyzing if it is part of the expected preamble. So, this process is repeated until the message has been completely received. 
 
