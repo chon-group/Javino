@@ -10,7 +10,7 @@ import org.jline.terminal.TerminalBuilder;
 import java.util.logging.Logger;
 
 public class Javino {
-	final String javinoVersion = "1.6.4";
+	final String javinoVersion = "1.6.5";
 	private String finalymsg = null;
 	private String PORTshortNAME = null;
 	private SerialPort serialPort = null;
@@ -64,7 +64,7 @@ public class Javino {
 		setPORTshortNAME(PORT);
 		if(!load(PORT)){
 			closePort();
-			setfinalmsg("port("+getPORTshortNAME()+",off);");
+			setfinalmsg("port("+getPORTshortNAME()+",off)[i];");
 			setPortAddress("unknown");
 			return true;
 		}
@@ -76,8 +76,7 @@ public class Javino {
 				while(this.serialPort.bytesAvailable()<6){
 					long timeMillisCurrent = System.currentTimeMillis();
 					if(timeMillisInitial+1000 < timeMillisCurrent){
-						setfinalmsg("port("+getPORTshortNAME()+",timeout);");
-						//setPortAddress("unknown");
+						setfinalmsg("port("+getPORTshortNAME()+",timeout)[i];");
 						return false;
 					}
 				}
@@ -109,10 +108,10 @@ public class Javino {
 		setPORTshortNAME(PORT);
 		if(sendCommand(PORT,MSG)) {
 			if(listenArduino(PORT)) {
-				addfinalmsg("port("+getPORTshortNAME()+",on);");
+				addfinalmsg("port("+getPORTshortNAME()+",on)[i];");
 			}
 		}else {
-			setfinalmsg("port("+getPORTshortNAME()+",off);");
+			setfinalmsg("port("+getPORTshortNAME()+",off)[i];");
 		}
 		return true;
 	}
