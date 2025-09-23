@@ -10,17 +10,21 @@ import org.jline.terminal.TerminalBuilder;
 import java.util.logging.Logger;
 
 public class Javino {
-	final String javinoVersion = "1.6.4";
+	final String javinoVersion = "1.6.5";
 	private String finalymsg = null;
 	private String PORTshortNAME = null;
 	private SerialPort serialPort = null;
 	private String portAddress  = "none";
+	private boolean infoPortStatus = true;
 	Logger logger = Logger.getLogger(Javino.class.getName());
 
 	public Javino() {
-		logger.info("Using version "+getJavinoVersion());
+		logger.info("Using version "+getJavinoVersion()+" https://javino.chon.group/");
 	}
 
+	public void infoPortStatus(boolean status){
+		this.infoPortStatus = status;
+	}
 	public String getPortAddress() {
 		return portAddress;
 	}
@@ -64,7 +68,9 @@ public class Javino {
 		setPORTshortNAME(PORT);
 		if(!load(PORT)){
 			closePort();
-			setfinalmsg("port("+getPORTshortNAME()+",off);");
+			if(this.infoPortStatus){
+				setfinalmsg("port("+getPORTshortNAME()+",off);");
+			}
 			setPortAddress("unknown");
 			return true;
 		}
@@ -76,7 +82,9 @@ public class Javino {
 				while(this.serialPort.bytesAvailable()<6){
 					long timeMillisCurrent = System.currentTimeMillis();
 					if(timeMillisInitial+1000 < timeMillisCurrent){
-						setfinalmsg("port("+getPORTshortNAME()+",timeout);");
+						if(this.infoPortStatus){
+							setfinalmsg("port("+getPORTshortNAME()+",timeout);");
+						}
 						//setPortAddress("unknown");
 						return false;
 					}
@@ -109,10 +117,14 @@ public class Javino {
 		setPORTshortNAME(PORT);
 		if(sendCommand(PORT,MSG)) {
 			if(listenArduino(PORT)) {
-				addfinalmsg("port("+getPORTshortNAME()+",on);");
+				if(this.infoPortStatus){
+					addfinalmsg("port("+getPORTshortNAME()+",on);");
+				}
 			}
 		}else {
-			setfinalmsg("port("+getPORTshortNAME()+",off);");
+			if(this.infoPortStatus){
+				setfinalmsg("port("+getPORTshortNAME()+",off);");
+			}
 		}
 		return true;
 	}
@@ -246,7 +258,7 @@ public class Javino {
 			}
 		} catch (Exception ex) {
 			System.out
-					.println("\tTo use Javino, read the User Manual at https://github.com/chon-group/Javino");
+					.println("\tTo use Javino, read the User Manual at http://javino.chon.group/");
 			System.out
 					.println("For more information try: \n\tjava -jar javino.jar --help");
 		}
