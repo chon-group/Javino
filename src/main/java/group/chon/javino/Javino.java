@@ -10,12 +10,13 @@ import org.jline.terminal.TerminalBuilder;
 import java.util.logging.Logger;
 
 public class Javino {
-	final String javinoVersion = "1.6.5";
+	final String javinoVersion = "1.6.6";
 	private String finalymsg = null;
 	private String PORTshortNAME = null;
 	private SerialPort serialPort = null;
 	private String portAddress  = "none";
-	private boolean infoPortStatus = true;
+	private boolean infoPortStatus = false;
+	private int TIMEOUT = 1000;
 	Logger logger = Logger.getLogger(Javino.class.getName());
 
 	public Javino() {
@@ -25,6 +26,11 @@ public class Javino {
 	public void infoPortStatus(boolean status){
 		this.infoPortStatus = status;
 	}
+
+	public void timeout(int newTimeout){
+		this.TIMEOUT = newTimeout;
+	}
+
 	public String getPortAddress() {
 		return portAddress;
 	}
@@ -81,7 +87,7 @@ public class Javino {
 				long timeMillisInitial = System.currentTimeMillis();
 				while(this.serialPort.bytesAvailable()<6){
 					long timeMillisCurrent = System.currentTimeMillis();
-					if(timeMillisInitial+1000 < timeMillisCurrent){
+					if(timeMillisInitial+TIMEOUT < timeMillisCurrent){
 						if(this.infoPortStatus){
 							setfinalmsg("port("+getPORTshortNAME()+",timeout);");
 						}
