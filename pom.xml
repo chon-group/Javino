@@ -6,7 +6,7 @@
 
     <groupId>com.github.chon-group</groupId>
     <artifactId>javino</artifactId>
-    <version>1.6.6</version>
+    <version>1.6.7</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

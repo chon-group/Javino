@@ -10,7 +10,7 @@ import org.jline.terminal.TerminalBuilder;
 import java.util.logging.Logger;
 
 public class Javino {
-	final String javinoVersion = "1.6.6";
+	final String javinoVersion = "1.6.7";
 	private String finalymsg = null;
 	private String PORTshortNAME = null;
 	private SerialPort serialPort = null;
@@ -197,7 +197,7 @@ public class Javino {
 			try {
 			if (args[0].equals("--help")) {
 				System.out
-						.println("\n user@computer:$ java -jar javino.jar [PORT]"
+						.println("\n user@computer:$ java -jar javino.jar [PORT] [--timeout ms]"
 								+ "\t javino@[PORT]$ [TYPE] [MSG] "
 								+ "\n [TYPE] "
 								+ "\n listen  -- wait an answer from Arduino"
@@ -208,6 +208,10 @@ public class Javino {
 					System.exit(1);
 				}
 				j.setPortAddress(args[0]);
+
+				if(args.length ==3 && args[1].equals("--timeout")){
+					j.timeout(Integer.parseInt(args[2]));
+				}
 				try{
 					Terminal terminal = TerminalBuilder.terminal();
 					LineReader lineReader = LineReaderBuilder.builder()
